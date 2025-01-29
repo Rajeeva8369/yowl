@@ -1,13 +1,13 @@
+
 <template>
     <div class="flex flex-col h-screen bg-black">
-  
       <header class="bg-black text-white py-4 px-6 shadow-md">
         <div class="flex items-center justify-between h-14 w-14">
-            <img src="C:\Users\rosas\yowl\frontend\frontend\image\logo.png">
+            <img src="/logo.png">
           <h1 class="text-3xl font-bold">MediTrust</h1>
           <div class="space-x-10">
             <router-link to="/Parameter">
-            <button class="bg-gray-200 text-black px-4 py-2 rounded-lg">Account</button>
+            <button class="bg-gray-200 text-black px-4 py-2 rounded-lg ml-80">Account</button>
         </router-link>
           </div>
         </div>
