@@ -4,6 +4,7 @@ import HomePage from "../components/HomePage.vue";
 import Menu from "../components/Menu.vue";
 import Parameter from "../components/Parameter.vue";
 import Register from "../components/Register.vue";
+import Contact from "../components/Contact.vue";
 
 const routes = [
     { path: "/", component: HomePage },
@@ -11,6 +12,7 @@ const routes = [
     { path: "/Menu", component: Menu },
     { path: "/Parameter", component: Parameter},
     { path: "/Register", component: Register },
+    { path: "/Contact", components: Contact },
    
 ];
 
