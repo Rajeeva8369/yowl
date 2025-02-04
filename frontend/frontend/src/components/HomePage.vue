@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col min-h-screen bg-black text-white">
-    <!-- Header -->
+   
     <header class="bg-gray-900 shadow-md py-4 px-6 flex items-center justify-between">
       <div class="flex items-center space-x-4">
         <img src="/logo.png" alt="MediTrust Logo" class="h-10" />
@@ -13,7 +13,7 @@
       </router-link>
     </header>
 
-    <!-- Main Content -->
+    
     <main class="flex-1 p-6 space-y-8 max-w-3xl mx-auto">
       <!-- Post Input -->
       <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
@@ -27,7 +27,7 @@
         </button>
       </div>
 
-      <!-- Feed -->
+      
       <div class="space-y-6">
         <div class="bg-gray-800 p-6 rounded-lg shadow-md flex flex-col space-y-4 border border-gray-700">
           <div class="flex items-center space-x-4">
@@ -73,12 +73,100 @@
     <footer class="bg-gray-900 text-gray-500 py-4 text-center text-sm mt-8 border-t border-gray-800">
       <p>&copy; 2025 MediTrust. All rights reserved.</p>
     </footer>
+    
+        <!-- ✅ POP-UP PREMIUM (Affichée après refus des cookies) -->
+    <div v-if="showPremiumBanner" class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl text-center">
+        <h2 class="text-2xl font-bold text-gray-900">Accès Premium Requis</h2>
+        <p class="mt-4 text-gray-700">
+          Vous avez refusé les cookies. Pour accéder gratuitement aux contenus, vous devez les accepter.
+          Sinon, profitez d'une expérience sans publicité avec MediTrust Premium.
+        </p>
+
+        <table class="w-full mt-4 text-gray-700 border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="p-2 border">Option</th>
+              <th class="p-2 border">Tout Refuser</th>
+              <th class="p-2 border">Tout Accepter</th>
+              <th class="p-2 border">Premium</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="p-2 border">Accès aux extraits</td>
+              <td class="p-2 border">✅</td>
+              <td class="p-2 border">✅</td>
+              <td class="p-2 border">✅</td>
+            </tr>
+            <tr>
+              <td class="p-2 border">Accès complet</td>
+              <td class="p-2 border">❌</td>
+              <td class="p-2 border">✅</td>
+              <td class="p-2 border">✅</td>
+            </tr>
+            <tr>
+              <td class="p-2 border">Sans publicité</td>
+              <td class="p-2 border">❌</td>
+              <td class="p-2 border">❌</td>
+              <td class="p-2 border">✅</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="mt-6 flex flex-col gap-4">
+          <button @click="onAccept" class="bg-blue-600 text-white px-6 py-2 rounded-lg">
+            Modifier et tout accepter
+          </button>
+          <button @click="confirmDecline" class="bg-gray-400 text-white px-6 py-2 rounded-lg">
+            Confirmer votre refus
+          </button>
+          <button class="bg-purple-600 text-white px-6 py-2 rounded-lg">
+            Passer à Premium - 5,99€/mois
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
 export default {
   name: "HomePage",
+  data() {
+    return {
+      showCookieBanner: false, // ✅ Affiché par défaut si aucun choix n'a été fait
+      showPremiumBanner: false, // ✅ Affiché uniquement après un refus des cookies
+    };
+  },
+  mounted() {
+    const consent = localStorage.getItem("cookieConsent");
+    console.log("🔍 Valeur de localStorage.cookieConsent:", consent);
+
+    // ✅ Vérifie si l'utilisateur a déjà accepté ou refusé
+    if (consent === null) {
+      this.showCookieBanner = true; // ✅ Si aucun choix n'a été fait, on affiche la pop-up cookies
+    }
+  },
+  methods: {
+    onAccept() {
+      localStorage.setItem("cookieConsent", "true");
+      this.showCookieBanner = false;
+      this.showPremiumBanner = false;
+      console.log("✅ Cookies acceptés !");
+    },
+    onDecline() {
+      localStorage.setItem("cookieConsent", "false");
+      this.showCookieBanner = false;
+      this.showPremiumBanner = true; // ✅ Afficher la pop-up Premium après refus des cookies
+      console.log("❌ Cookies refusés !");
+    },
+    confirmDecline() {
+      this.showPremiumBanner = false; // ✅ Fermer la pop-up après confirmation du refus
+      console.log("✅ Refus des cookies confirmé !");
+    }
+  }
 };
 </script>
 

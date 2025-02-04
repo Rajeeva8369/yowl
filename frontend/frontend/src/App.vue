@@ -1,13 +1,17 @@
 <template>
-    <div id="app" class="min-h-screen bg-gray-100">
-      <router-view />
-    </div>
-  </template>
-  
-  <script setup>
-  import Parameter from "./components/Parameter.vue";
-  </script>
-  
-  <style>
-  </style>
+  <div id="app" class="min-h-screen bg-gray-100">
+      <Menu/>
+    <router-view />
+  </div>
+ 
+</template>
+
+<script setup>
+import { RouterView } from "vue-router"
+</script>
+
+<style>
+</style>
+
+
   
