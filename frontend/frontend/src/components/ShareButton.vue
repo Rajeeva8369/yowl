@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref } from "vue";
+import { ref } from "vue";
 import { DocumentDuplicateIcon } from "@heroicons/vue/24/outline"; // Icône de copie
 
 // ✅ Récupérer les props pour afficher le modal
