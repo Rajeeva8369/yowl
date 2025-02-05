@@ -1,113 +1,286 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { DocumentDuplicateIcon } from "@heroicons/vue/24/outline";
 
-// Initialisation du router
-const router = useRouter();
-
-// États réactifs
+// ✅ États réactifs
+const newPostContent = ref("");
+const newPostImage = ref(null);
+const posts = ref([]);
+const isShareOpen = ref(false);
+const shareLink = ref("https://meditrust.com/share");
+const isCopied = ref(false);
 const showCookieBanner = ref(false);
 const showPremiumBanner = ref(false);
 
-// Vérification du consentement aux cookies
-onMounted(() => {
+// ✅ Vérifier et charger l'état des cookies
+const checkCookieConsent = () => {
   const consent = localStorage.getItem("cookieConsent");
-  console.log("🔍 Valeur de localStorage.cookieConsent:", consent);
-
-  if (!consent || consent === "null" || consent === "undefined") {
-    console.log("📢 Affichage du bandeau cookies !");
-    showCookieBanner.value = true;
+  if (!consent) {
+    showCookieBanner.value = true; // Afficher la bannière si aucun consentement n'a été donné
+  } else if (consent === "declined") {
+    showPremiumBanner.value = true; // Afficher l'option premium si refusé
   }
-});
+};
 
-// ✅ Gestion des choix de cookies
+// ✅ Accepter/refuser les cookies
 const onAccept = () => {
-  localStorage.setItem("cookieConsent", "true");
+  localStorage.setItem("cookieConsent", "accepted");
   showCookieBanner.value = false;
   showPremiumBanner.value = false;
-  console.log("✅ Cookies acceptés !");
 };
 
 const onDecline = () => {
-  localStorage.setItem("cookieConsent", "false");
+  localStorage.setItem("cookieConsent", "declined");
   showCookieBanner.value = false;
-  showPremiumBanner.value = true; // ✅ Affichage immédiat du Premium
-  console.log("❌ Cookies refusés !");
+  showPremiumBanner.value = true;
 };
 
-const confirmDecline = () => {
-  showPremiumBanner.value = false;
-  console.log("✅ Refus des cookies confirmé !");
+// ✅ Réinitialiser le consentement des cookies (Test depuis la console)
+const resetCookies = () => {
+  localStorage.removeItem("cookieConsent");
+  location.reload();
 };
+
+// ✅ Charger les posts depuis `localStorage`
+const loadPosts = () => {
+  const storedPosts = localStorage.getItem("posts");
+
+  // ✅ Posts initiaux qui ne peuvent pas être supprimés
+  const defaultPosts = [
+    {
+      username: "Admin",
+      timestamp: Date.now() - 86400000, // 1 jour avant
+      content: "Bienvenue sur MediTrust ! Partagez vos pensées et opinions ici.",
+      userImage: "https://via.placeholder.com/50",
+      image: null,
+      likes: 10,
+      isLiked: false,
+      comments: ["Merci !", "Super initiative."],
+      newComment: "",
+      showCommentSection: false,
+      isPermanent: true, // Ne peut pas être supprimé
+    },
+    {
+      username: "MediTrust Team",
+      timestamp: Date.now() - 43200000, // 12 heures avant
+      content: "N'oubliez pas de respecter les règles de la communauté 😊",
+      userImage: "https://via.placeholder.com/50",
+      image: null,
+      likes: 5,
+      isLiked: false,
+      comments: ["Bonne idée !", "Je suis d'accord."],
+      newComment: "",
+      showCommentSection: false,
+      isPermanent: true, // Ne peut pas être supprimé
+    },
+  ];
+
+  posts.value = storedPosts ? JSON.parse(storedPosts) : defaultPosts;
+};
+
+// ✅ Sauvegarder les posts dans `localStorage`
+const savePosts = () => {
+  localStorage.setItem("posts", JSON.stringify(posts.value));
+};
+
+// ✅ Ajouter un post (seuls les nouveaux posts peuvent être supprimés)
+const addPost = () => {
+  if (newPostContent.value.trim() === "") return;
+
+  const newPost = {
+    username: "You",
+    timestamp: Date.now(),
+    content: newPostContent.value,
+    userImage: "https://via.placeholder.com/50",
+    image: newPostImage.value,
+    likes: 0,
+    isLiked: false,
+    comments: [],
+    newComment: "",
+    showCommentSection: false,
+    isPermanent: false, // Ce post peut être supprimé
+  };
+
+  posts.value.unshift(newPost);
+  savePosts();
+  newPostContent.value = "";
+  newPostImage.value = null;
+};
+
+// ✅ Gérer l'upload d'une image pour un post
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      newPostImage.value = reader.result;
+    };
+  }
+};
+
+// ✅ Supprimer un post (empêcher la suppression des posts initiaux)
+const deletePost = (index) => {
+  if (!posts.value[index].isPermanent) {
+    posts.value.splice(index, 1);
+    savePosts();
+  } else {
+    alert("Ce post ne peut pas être supprimé !");
+  }
+};
+
+// ✅ Supprimer un commentaire d'un post
+const deleteComment = (postIndex, commentIndex) => {
+  if (posts.value[postIndex] && posts.value[postIndex].comments[commentIndex]) {
+    posts.value[postIndex].comments.splice(commentIndex, 1);
+    savePosts();
+  }
+};
+
+// ✅ Gérer les likes (ajouter/enlever)
+const likePost = (index) => {
+  posts.value[index].isLiked = !posts.value[index].isLiked;
+  posts.value[index].likes += posts.value[index].isLiked ? 1 : -1;
+  savePosts();
+};
+
+// ✅ Ouvrir/fermer la section des commentaires
+const toggleComments = (index) => {
+  posts.value[index].showCommentSection = !posts.value[index].showCommentSection;
+};
+
+// ✅ Ajouter un commentaire
+const addComment = (index) => {
+  if (posts.value[index].newComment.trim() === "") return;
+  posts.value[index].comments.push(posts.value[index].newComment);
+  posts.value[index].newComment = "";
+  savePosts();
+};
+
+// ✅ Gérer le formatage du temps écoulé depuis la publication d'un post
+const timeAgo = (timestamp) => {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} days ago`;
+};
+
+// ✅ Copier le lien de partage
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(shareLink.value);
+    isCopied.value = true;
+    setTimeout(() => (isCopied.value = false), 2000);
+  } catch (err) {
+    alert("Impossible de copier le lien.");
+  }
+};
+
+// ✅ Confirmer le refus des cookies
+const confirmDecline = () => {
+  showPremiumBanner.value = false; // Ferme la fenêtre Premium
+  alert("Vous avez confirmé votre refus des cookies. Certaines fonctionnalités peuvent être limitées.");
+};
+
+// ✅ Charger les posts et vérifier les cookies au montage
+onMounted(() => {
+  checkCookieConsent();
+  loadPosts();
+});
 </script>
 
+
+
 <template>
-  <div class="flex flex-col min-h-screen bg-black text-white">
-    <!-- HEADER -->
+  <div class="flex flex-col min-h-screen bg-gray-950 text-white">
+    <!-- ✅ HEADER -->
     <header class="bg-gray-900 shadow-md py-4 px-6 flex items-center justify-between">
       <div class="flex items-center space-x-4">
         <img src="/logo.png" alt="MediTrust Logo" class="h-10" />
-        <h1 class="text-3xl font-bold tracking-wide">MediTrust</h1>
+        <h1 class="text-3xl font-bold tracking-wide text-gray-200">MediTrust</h1>
       </div>
-      <router-link to="/Parameter">
-        <button class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition border border-gray-600">
-          Account
-        </button>
-      </router-link>
     </header>
 
-    <!-- CONTENU PRINCIPAL -->
+    <!-- ✅ CONTENU PRINCIPAL -->
     <main class="flex-1 p-6 space-y-8 max-w-3xl mx-auto">
-      <!-- Zone de création de post -->
-      <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-        <textarea
-          class="w-full p-4 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-          rows="4"
-          placeholder="What's on your mind?"
-        ></textarea>
-        <button class="mt-4 bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition w-full border border-gray-600">
-          Post
-        </button>
+      <!-- ✅ Zone de création de post -->
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg border">
+        <textarea v-model="newPostContent" class="w-full p-4 bg-gray-700 text-white border rounded-lg" rows="4" placeholder="What's on your mind?"></textarea>
+        <input type="file" @change="handleImageUpload" class="mt-3 text-sm text-gray-400" />
+        <button @click="addPost" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg w-full">Post</button>
+        
       </div>
-      <!-- Liste des posts -->
-      <div class="space-y-6">
-        <!-- Premier post -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md flex flex-col space-y-4 border border-gray-700">
-          <div class="flex items-center space-x-4">
-            <img src="https://yt3.googleusercontent.com/gupO1lvHk2XOg82UrvkG0lFFY8iw7r6y0HcKjaoOOWilFxjcO_8vQbgXduHVtLBsv932TymLjA=s900-c-k-c0x00ffffff-no-rj"
-              alt="User" class="w-12 h-12 rounded-full border-2 border-gray-500" />
-            <div>
-              <p class="font-semibold text-gray-200">TF1</p>
-              <p class="text-gray-500 text-sm">2 hours ago</p>
-            </div>
+
+      <!-- ✅ Liste des posts -->
+      <div v-for="(post, index) in posts" :key="index" class="bg-gray-800 p-6 rounded-lg border">
+        <div class="flex items-center space-x-4">
+          <img :src="post.userImage" alt="User" class="w-12 h-12 rounded-full border-2 border-blue-500" />
+          <div>
+            <p class="font-semibold text-gray-200">{{ post.username }}</p>
+            <p class="text-gray-500 text-sm">{{ timeAgo(post.timestamp) }}</p>
           </div>
-          <p class="text-gray-300">Trêve à Gaza : Israël confirme avoir libéré 200 détenus...</p>
-          <img src="https://i.cbc.ca/1.7433079.1737150061!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_1180/gaza.jpg"
-            class="rounded-lg border border-gray-600" />
+        </div>
+        <p class="text-gray-300">{{ post.content }}</p>
+        <img v-if="post.image" :src="post.image" class="rounded-lg border max-h-80 object-cover" />
+
+        <div class="flex justify-around mt-4 text-gray-400">
+          <button @click="likePost(index)" class="hover:text-blue-400">
+            👍 <span>{{ post.likes }}</span>
+          </button>
+          <button @click="toggleComments(index)" class="hover:text-green-400">
+            💬 Comments ({{ post.comments.length }})
+          </button>
+          <button @click="isShareOpen = true" class="hover:text-yellow-400">
+            🔄 Share
+          </button>
+          <div class="flex justify-between items-center mt-4">
+  <button @click="deletePost(index)" class="text-red-500 hover:text-red-700">
+    🗑 Supprimer
+  </button>
+</div>
+
         </div>
 
-        <!-- Deuxième post -->
-        <div class="bg-gray-800 p-6 rounded-lg shadow-md flex flex-col space-y-4 border border-gray-700">
-          <div class="flex items-center space-x-4">
-            <img src="https://yt3.ggpht.com/-uYnyeu0wFpQ/AAAAAAAAAAI/AAAAAAAAAAA/VU2Ct3J_ZQw/s900-c-k-no/photo.jpg"
-              alt="User" class="w-12 h-12 rounded-full border-2 border-gray-500" />
-            <div>
-              <p class="font-semibold text-gray-200">Sky News</p>
-              <p class="text-gray-500 text-sm">4 hours ago</p>
-            </div>
+        <!-- ✅ Section des commentaires -->
+        <div v-if="post.showCommentSection" class="mt-4">
+          <div v-for="(comment, cIndex) in post.comments" :key="cIndex" class="text-gray-300 bg-gray-700 p-2 rounded-lg shadow-md">
+            {{ comment }}
           </div>
-          <p class="text-gray-300">Binotto and the Audi project: "It will be a long journey"</p>
-          <img src="https://cdn-1.motorsport.com/images/amp/YMd98vv2/s800/mattia-binotto-directeur-des-o.webp"
-            class="rounded-lg border border-gray-600" />
+          <input v-model="post.newComment" placeholder="Write a comment..." class="w-full mt-2 p-2 bg-gray-700 text-white border rounded-lg" />
+          <button @click="addComment(index)" class="mt-2 bg-green-600 text-white px-4 py-2 rounded-lg">Comment</button>
+          <div v-for="(comment, cIndex) in post.comments" :key="cIndex" class="flex justify-between items-center bg-gray-700 p-2 rounded-lg shadow-md mt-2">
+  <span class="text-gray-300">{{ comment }}</span>
+  <button @click="deleteComment(index, cIndex)" class="text-red-400 hover:text-red-600">
+    ❌
+  </button>
+</div>
+
         </div>
       </div>
-    
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-gray-900 text-gray-500 py-4 text-center text-sm mt-8 border-t border-gray-800">
+    <!-- ✅ FOOTER -->
+    <footer class="bg-gray-900 text-gray-500 py-4 text-center mt-8 border-t">
       <p>&copy; 2025 MediTrust. All rights reserved.</p>
     </footer>
+
+    <!-- ✅ POP-UP SHARE -->
+    <div v-if="isShareOpen" class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center">
+      <div class="bg-white p-6 rounded-lg max-w-md text-center">
+        <h2 class="text-2xl font-bold text-gray-900">Partager le lien</h2>
+        <div class="flex items-center mt-4 border border-gray-300 p-2 rounded-md">
+          <input type="text" class="w-full px-2 text-gray-900" v-model="shareLink" readonly />
+          <button @click="copyLink" class="ml-2 bg-gray-800 text-white px-4 py-1 rounded-lg">
+            <DocumentDuplicateIcon class="w-5 h-5 mr-1" /> Copier
+          </button>
+        </div>
+        <button @click="isShareOpen = false" class="mt-4 bg-gray-400 text-white px-6 py-2 rounded-lg">Fermer</button>
+      </div>
+    </div>
 
     <!-- ✅ POP-UP COOKIES (Première fenêtre) -->
     <div v-if="showCookieBanner" class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
@@ -183,6 +356,12 @@ const confirmDecline = () => {
       </div>
     </div>
   </div>
+  <!-- Bouton pour réinitialiser les cookies -->
+<div class="fixed bottom-5 right-5">
+  <button @click="resetCookies" class="bg-red-500 text-white px-4 py-2 rounded-lg">
+    Réinitialiser les cookies
+  </button>
+</div>
 </template>
 
 <style scoped>
