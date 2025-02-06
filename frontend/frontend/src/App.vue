@@ -1,13 +1,13 @@
 <template>
-  <div id="app" class="min-h-screen bg-gray-100">
-      <Menu/>
+  <div class="min-h-screen w-full bg-black text-white">
+          <Menu/>
     <router-view />
   </div>
- 
 </template>
 
 <script setup>
-import { RouterView } from "vue-router"
+import Menu from "./components/Menu.vue"; 
+
 </script>
 
 <style>
