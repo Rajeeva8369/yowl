@@ -8,7 +8,7 @@ const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value
 }
 
-// Custom composition function to handle click outside
+
 const handleClickOutside = (event: MouseEvent) => {
   if (dropdownButtonRef.value && !dropdownButtonRef.value.contains(event.target as Node)) {
     dropdownOpen.value = false
