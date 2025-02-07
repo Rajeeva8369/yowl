@@ -1,6 +1,5 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-950 text-white">
-    <!-- ✅ Contenu principal -->
     <main class="flex-1 p-6 space-y-8 max-w-3xl mx-auto">
       
       <!-- ✅ Zone de création de post -->
@@ -19,7 +18,7 @@
         <p v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</p>
       </div>
 
-      <!-- ✅ Affichage des posts -->
+      <!-- ✅ Affichage des posts paginés -->
       <div v-for="(post, index) in posts" :key="index" class="bg-gray-800 p-6 rounded-lg">
         <div class="flex items-center space-x-4">
           <img :src="post.userImage || 'https://via.placeholder.com/50'" 
@@ -32,12 +31,16 @@
         <p class="text-gray-300 mt-2">{{ post.content }}</p>
         <img v-if="post.image" :src="post.image" class="rounded-lg max-h-80 object-cover mt-2" />
 
+        <!-- ✅ Actions sur le post -->
         <div class="flex justify-around items-center mt-4 text-gray-400">
-          <button @click="likePost(index)" class="hover:text-red-700">
+          <button @click="likePost(post.id, index)" class="hover:text-red-700">
             ♥ {{ post.likes }}
           </button>
           <button @click="toggleComments(index)" class="hover:text-black">
             Comments ({{ post.comments.length }})
+          </button>
+          <button @click="sharePost(post.id)" class="hover:text-blue-400">
+            ➦ Partager
           </button>
         </div>
 
@@ -47,7 +50,7 @@
             {{ comment.content }}
           </div>
           <input v-model="post.newComment" placeholder="Add a comment..." class="w-full mt-2 p-2 bg-gray-700 text-white rounded-lg" />
-          <button @click="addComment(index)" class="mt-2 bg-black text-white px-4 py-2 rounded-lg">Comment</button>
+          <button @click="addComment(post.id, index)" class="mt-2 bg-black text-white px-4 py-2 rounded-lg">Comment</button>
         </div>
       </div>
     </main>
@@ -59,11 +62,7 @@
   </div>
 </template>
 
----
 
-### **📌 Script Vue (avec le Token de l'Utilisateur Connecté)**
-
-```vue
 <script>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -76,7 +75,7 @@ export default {
     const errorMessage = ref("");
     const router = useRouter();
 
-    // ✅ Récupérer le token de l'utilisateur connecté
+    // ✅ Récupérer le token et l'utilisateur connecté
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -104,14 +103,71 @@ export default {
           content: post.attributes.content,
           image: post.attributes.image?.url || null,
           username: post.attributes.users_permissions_user?.username || "Anonymous",
+          userImage: post.attributes.users_permissions_user?.avatar?.url || null,
           createdAt: post.attributes.createdAt,
           comments: post.attributes.comments || [],
-          likes: 0,
+          likes: post.attributes.likes || 0, // ✅ Correction du chargement des likes
           showCommentSection: false,
           newComment: "",
         }));
       } catch (error) {
         console.error("❌ Erreur API:", error);
+      }
+    };
+
+    // ✅ Ajouter un like
+    const likePost = async (postId, index) => {
+      try {
+        console.log(`👍 Like ajouté au post ${postId}`);
+
+        const response = await fetch(`http://localhost:1337/api/posts/${postId}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: { likes: posts.value[index].likes + 1 }, // ✅ Mise à jour des likes
+          }),
+        });
+
+        if (!response.ok) throw new Error("❌ Échec du like");
+
+        posts.value[index].likes += 1;
+      } catch (error) {
+        console.error("❌ Erreur lors du like:", error);
+      }
+    };
+
+    // ✅ Ajouter un commentaire
+    const addComment = async (postId, index) => {
+      if (!posts.value[index].newComment.trim()) return;
+
+      try {
+        console.log(`📝 Ajout du commentaire: ${posts.value[index].newComment}`);
+
+        const response = await fetch("http://localhost:1337/api/comments", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: {
+              content: posts.value[index].newComment,
+              post: postId,
+              user: user.id,
+            },
+          }),
+        });
+
+        if (!response.ok) throw new Error("❌ Échec de l'ajout du commentaire");
+
+        // ✅ Mise à jour locale du commentaire sans recharger
+        posts.value[index].comments.push({ content: posts.value[index].newComment });
+        posts.value[index].newComment = "";
+      } catch (error) {
+        console.error("❌ Erreur lors de l'ajout du commentaire:", error);
       }
     };
 
@@ -134,21 +190,17 @@ export default {
           body: JSON.stringify({
             data: {
               content: newPostContent.value,
-              users_permissions_user: user.id, // 🔥 Lier le post à l'utilisateur connecté
+              users_permissions_user: user.id,
+              image: newPostImage.value,
             },
           }),
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("❌ Erreur API:", errorData);
-          errorMessage.value = "Échec de la création du post.";
-          return;
-        }
+        if (!response.ok) throw new Error("❌ Échec de la création du post");
 
         console.log("✅ Post créé avec succès !");
         newPostContent.value = "";
-        loadPosts();
+        loadPosts(); // ✅ Recharger la liste des posts après ajout
       } catch (error) {
         console.error("❌ Erreur lors de la création du post:", error);
         errorMessage.value = "Échec de la création du post.";
@@ -191,6 +243,18 @@ export default {
       }
     };
 
+    // ✅ Afficher/masquer la section des commentaires
+    const toggleComments = (index) => {
+      posts.value[index].showCommentSection = !posts.value[index].showCommentSection;
+    };
+
+    // ✅ Partager un post
+    const sharePost = (postId) => {
+      const shareUrl = `http://localhost:5173/posts/${postId}`;
+      navigator.clipboard.writeText(shareUrl);
+      alert("Lien copié !");
+    };
+
     onMounted(() => {
       loadPosts();
     });
@@ -203,6 +267,10 @@ export default {
       addPost,
       handleImageUpload,
       formatDate,
+      addComment,
+      likePost,
+      toggleComments,
+      sharePost,
     };
   },
 };
