@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-950 text-white">
-    
+   
 
     <main class="flex-1 p-6 space-y-8 max-w-3xl mx-auto">
       <!-- Zone de création de post -->
@@ -215,7 +215,7 @@ export default {
         const formData = new FormData();
         formData.append('files', file);
 
-        const uploadResponse = await fetch('http://localhost:1337/api/upload', {
+        const uploadResponse = await fetch('http://localhost:1337/api/images', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
