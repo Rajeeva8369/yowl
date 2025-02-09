@@ -7,7 +7,6 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <!-- ✅ Fenêtre principale des cookies -->
       <div v-if="showCookieBanner" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
         <div class="bg-white p-6 rounded-2xl shadow-xl max-w-lg w-full text-center">
           <h2 class="text-3xl font-bold text-gray-900">MediTrust et vos données</h2>
@@ -16,7 +15,6 @@
             Vous pouvez les accepter, les refuser ou choisir vos préférences.
           </p>
   
-          <!-- ✅ Options des cookies -->
           <div class="mt-5 space-y-4 text-left">
             <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
               <div>
@@ -59,7 +57,6 @@
             </div>
           </div>
   
-          <!-- ✅ Boutons d'action -->
           <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3">
             <button
               @click="acceptAllCookies"
@@ -84,7 +81,6 @@
       </div>
     </transition>
   
-    <!-- ✅ Deuxième fenêtre de confirmation après refus des cookies -->
     <transition
       enter-active-class="transition-opacity duration-300"
       enter-from-class="opacity-0"
@@ -133,7 +129,6 @@
         performance: false,
       });
   
-      // ✅ Vérifier les préférences de l'utilisateur
       onMounted(() => {
         const savedPreferences = localStorage.getItem("cookiePreferences");
         if (!savedPreferences) {
@@ -143,19 +138,16 @@
         }
       });
   
-      // ✅ Basculer un cookie ON/OFF
       const toggleCookie = (type) => {
         cookies.value[type] = !cookies.value[type];
       };
   
-      // ✅ Accepter tous les cookies
       const acceptAllCookies = () => {
         cookies.value.functional = true;
         cookies.value.performance = true;
         savePreferences();
       };
   
-      // ❌ Refuser tous les cookies (sauf les nécessaires)
       const rejectAllCookies = () => {
         cookies.value.functional = false;
         cookies.value.performance = false;
@@ -163,13 +155,11 @@
         showRefusalMessage.value = true;
       };
   
-      // ✅ Sauvegarder les préférences et fermer la bannière
       const savePreferences = () => {
         localStorage.setItem("cookiePreferences", JSON.stringify(cookies.value));
         showCookieBanner.value = false;
       };
   
-      // ✅ Fermer la deuxième fenêtre après refus
       const closeRefusalMessage = () => {
         showRefusalMessage.value = false;
       };
