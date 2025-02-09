@@ -11,10 +11,12 @@ const routes = [
   { path: "/", component: HomePage },
   { path: "/login", component: Login },
   { path: "/parameter", component: Parameter },
-  { path: "/register", component: Register }, // 🔴 FIXED (lowercase)
+  { path: "/register", component: Register }, 
   { path: "/contact", component: Contact },
   { path: "/about", component: About },
   { path: "/profile", component: Profil },
+  
+
 ];
 
 const router = createRouter({ history: createWebHistory(), routes });

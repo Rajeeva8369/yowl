@@ -2,12 +2,12 @@
   <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 p-4">
     <div class="w-full max-w-md bg-white bg-opacity-10 backdrop-blur-md rounded-3xl shadow-2xl p-8 text-center border border-gray-700">
       
-      <!-- ✅ Show Error Messages -->
+      
       <div v-if="error" class="text-red-500 font-semibold mb-4">{{ error }}</div>
 
-      <!-- ✅ Show Profile Info If Logged In -->
+      
       <div v-if="isLoggedIn">
-        <!-- Profile Picture -->
+       
         <div class="w-24 h-24 mx-auto bg-gray-700 text-white flex items-center justify-center rounded-full text-3xl font-bold shadow-lg">
           {{ userProfile?.username.charAt(0).toUpperCase() }}
         </div>
@@ -15,13 +15,13 @@
         <h2 class="mt-4 text-2xl font-extrabold text-white">Bonjour {{ userProfile?.username }}</h2>
         <p class="text-gray-300 text-lg">{{ userProfile?.email }}</p>
 
-        <!-- Additional Info -->
+        
         <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg shadow-md">
           <p class="text-gray-400 text-sm">Member since: <span class="font-semibold text-white">{{ formatDate(userProfile?.createdAt) }}</span></p>
         </div>
       </div>
 
-      <!-- ❌ Redirecting if not logged in -->
+      
       <div v-else class="text-gray-400 text-lg font-semibold">
         Redirecting to login...
       </div>
@@ -40,12 +40,12 @@ export default {
     const isLoggedIn = ref(false);
     const router = useRouter();
 
-    // ✅ Fetch user profile safely
+    
     const fetchUserProfile = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
         console.warn("🔴 No token found in localStorage. Redirecting to login.");
-        router.push("/login"); // ✅ Redirect to login if not authenticated
+        router.push("/login"); 
         return;
       }
 
@@ -63,11 +63,11 @@ export default {
         error.value = "Failed to load profile. Please login again.";
         localStorage.removeItem("token");
         isLoggedIn.value = false;
-        router.push("/login"); // ✅ Redirect only when necessary
+        router.push("/login"); 
       }
     };
 
-    // ✅ Format Date for Member Since
+    
     const formatDate = (dateString) => {
       if (!dateString) return "N/A";
       return new Date(dateString).toLocaleDateString("en-US", {
@@ -77,7 +77,7 @@ export default {
       });
     };
 
-    // ✅ Fetch profile on page load
+   
     onMounted(() => {
       fetchUserProfile();
     });
@@ -88,12 +88,12 @@ export default {
 </script>
 
 <style scoped>
-/* Smooth animations */
+
 h2, p, div {
   transition: all 0.3s ease-in-out;
 }
 
-/* Glow effect on profile */
+
 .bg-white.bg-opacity-10 {
   transition: all 0.4s ease-in-out;
 }

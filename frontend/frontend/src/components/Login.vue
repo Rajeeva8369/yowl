@@ -6,7 +6,7 @@
         <p class="text-gray-400 mt-2 text-lg">Sign in to your account</p>
       </div>
 
-      <!-- ✅ Login Form -->
+      
       <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
           <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
@@ -34,18 +34,19 @@
 
         <button
           type="submit"
-          class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition duration-300 ease-in-out shadow-lg"
+          :disabled="isLoading"
+          class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-semibold transition duration-300 ease-in-out shadow-lg"
         >
-          Login
+          {{ isLoading ? "Logging in..." : "Login" }}
         </button>
       </form>
 
-      <!-- ✅ Error Message -->
+      
       <div v-if="errorMessage" class="text-red-500 text-center mt-2">
         {{ errorMessage }}
       </div>
 
-      <!-- ✅ Redirect to Register -->
+      
       <div class="text-center">
         <p class="text-gray-400 text-sm">
           Don't have an account?
@@ -57,7 +58,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, defineEmits } from "vue";
 import { useRouter } from "vue-router";
 
 export default {
@@ -65,10 +66,15 @@ export default {
     const email = ref("");
     const password = ref("");
     const errorMessage = ref("");
+    const isLoading = ref(false);
     const router = useRouter();
+    const emit = defineEmits(["showCookieBanner"]);
 
     const handleLogin = async () => {
       try {
+        isLoading.value = true;
+        console.log("🔄 Tentative de connexion...");
+
         const response = await fetch("http://localhost:1337/api/auth/local", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -79,29 +85,40 @@ export default {
         });
 
         const data = await response.json();
+        console.log("🔍 Réponse Strapi :", JSON.stringify(data, null, 2));
 
-        if (response.ok) {
-          // ✅ Store the token & user info
+        
+        if (response.ok && data.jwt) {
+          console.log("✅ Connexion réussie !");
+
+          
           localStorage.setItem("token", data.jwt);
           localStorage.setItem("user", JSON.stringify(data.user));
 
-          console.log("✅ Login successful:", data);
-
-          // ✅ Notify other components (navbar) that the user is logged in
           window.dispatchEvent(new Event("authChanged"));
 
-          // ✅ Redirect to Home (`/`)
-          router.push("/");
+          
+          localStorage.removeItem("cookiePreferences");
+
+          
+          emit("showCookieBanner");
+
+          router.push("/profile");
         } else {
-          errorMessage.value = data.message || "Login failed";
+          console.error("❌ Erreur API Strapi :", data);
+
+          
+          errorMessage.value = data.error?.message || "Échec de la connexion. Vérifiez vos identifiants.";
         }
       } catch (error) {
-        console.error("❌ Login error:", error);
-        errorMessage.value = "An error occurred. Please try again.";
+        console.error("❌ Erreur lors de la connexion :", error);
+        errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
+      } finally {
+        isLoading.value = false;
       }
     };
 
-    return { email, password, errorMessage, handleLogin };
+    return { email, password, errorMessage, handleLogin, isLoading };
   },
 };
 </script>

@@ -3,7 +3,7 @@
    
 
     <main class="flex-1 p-6 space-y-8 max-w-3xl mx-auto">
-      <!-- Zone de création de post -->
+      
       <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 class="text-xl font-semibold text-white">Créer un post</h2>
         <textarea 
@@ -27,9 +27,9 @@
         <p v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</p>
       </div>
 
-      <!-- Liste des posts -->
+      
       <div v-for="(post, index) in posts" :key="post.id" class="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <!-- En-tête du post -->
+        
         <div class="flex items-center space-x-4">
           <img 
             :src="post.userImage || 'https://via.placeholder.com/50'" 
@@ -40,7 +40,7 @@
             <p class="font-semibold text-gray-200">{{ post.username }}</p>
             <p class="text-gray-500 text-sm">{{ formatDate(post.createdAt) }}</p>
           </div>
-          <!-- Bouton de suppression si c'est le post de l'utilisateur -->
+          
           <button 
             v-if="String(post.userId) === String(user.id)"
             @click="deletePost(post.id, index)" 
@@ -50,7 +50,7 @@
           </button>
         </div>
 
-        <!-- Contenu du post -->
+        
         <p class="text-gray-300 mt-4">{{ post.content }}</p>
         <img 
           v-if="post.image" 
@@ -59,7 +59,7 @@
           alt="Post image"
         />
 
-        <!-- Actions sur le post -->
+        
         <div class="flex justify-around items-center mt-6 text-gray-400">
           <button @click="likePost(post.id, index)" class="hover:text-red-500 transition duration-200">
             ♥ {{ post.likes }}
@@ -72,7 +72,7 @@
           </button>
         </div>
 
-        <!-- Section des commentaires -->
+        
         <div v-if="post.showCommentSection" class="mt-4 space-y-4">
           <div v-for="(comment, cIndex) in post.comments" :key="comment.id" 
                class="bg-gray-700 p-3 rounded-lg flex justify-between items-center">
@@ -85,7 +85,7 @@
               🗑
             </button>
           </div>
-          <!-- Formulaire d'ajout de commentaire -->
+          
           <div class="flex space-x-2">
             <input 
               v-model="post.newComment" 
@@ -102,13 +102,9 @@
         </div>
       </div>
 
-      <!-- Message si aucun post -->
-      <div v-if="posts.length === 0" class="text-center text-gray-500 py-8">
-        Aucun post à afficher
-      </div>
     </main>
 
-    <!-- Footer avec pagination -->
+    
     <footer class="bg-gray-900 text-gray-500 py-4 text-center text-sm mt-8 border-t border-gray-800">
       <div class="flex justify-center items-center space-x-4 mb-4">
         <button 
@@ -150,7 +146,7 @@ export default {
 
     const totalPages = computed(() => Math.ceil(totalPosts.value / pageSize.value));
 
-    // Récupérer le token et l'utilisateur connecté
+    
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -160,7 +156,8 @@ export default {
       return;
     }
 
-    // Charger les posts depuis Strapi avec pagination
+    
+    
     const loadPosts = async (page = 1) => {
       try {
         const response = await fetch(
@@ -206,7 +203,7 @@ export default {
       }
     };
 
-    // Gérer l'upload d'image
+    
     const handleImageUpload = async (event) => {
       const file = event.target.files[0];
       if (!file) return;
@@ -233,7 +230,7 @@ export default {
       }
     };
 
-    // Ajouter un post
+    
     const addPost = async () => {
       errorMessage.value = "";
 
@@ -272,7 +269,7 @@ export default {
       }
     };
 
-    // Supprimer un post
+    
     const deletePost = async (postId, index) => {
       const post = posts.value[index];
       
@@ -302,7 +299,7 @@ export default {
       }
     };
 
-    // Supprimer un commentaire
+    
     const deleteComment = async (commentId, postIndex, commentIndex) => {
       if (String(posts.value[postIndex].comments[commentIndex].userId) !== String(user.id)) {
         alert("Vous ne pouvez supprimer que vos propres commentaires");
@@ -326,7 +323,7 @@ export default {
       }
     };
 
-    // Ajouter un like
+    
     const likePost = async (postId, index) => {
       try {
         const response = await fetch(`http://localhost:1337/api/posts/${postId}`, {
@@ -348,7 +345,7 @@ export default {
       }
     };
 
-    // Ajouter un commentaire
+    
     const addComment = async (postId, index) => {
       if (!posts.value[index].newComment.trim()) return;
 
@@ -383,7 +380,7 @@ export default {
       }
     };
 
-    // Formater la date
+    
     const formatDate = (dateString) => {
       if (!dateString) return "Date inconnue";
       return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -395,19 +392,19 @@ export default {
       });
     };
 
-    // Afficher/masquer les commentaires
+    
     const toggleComments = (index) => {
       posts.value[index].showCommentSection = !posts.value[index].showCommentSection;
     };
 
-    // Partager un post
+    
     const sharePost = (postId) => {
       const shareUrl = `${window.location.origin}/posts/${postId}`;
       navigator.clipboard.writeText(shareUrl);
       alert("Lien copié dans le presse-papier !");
     };
 
-    // Changer de page
+    
     const changePage = (newPage) => {
       if (newPage >= 1 && newPage <= totalPages.value) {
         currentPage.value = newPage;

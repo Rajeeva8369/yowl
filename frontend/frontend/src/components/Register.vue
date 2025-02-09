@@ -6,7 +6,6 @@
         <p class="text-gray-400 mt-2 text-lg">Sign up to access MediTrust</p>
       </div>
 
-      <!-- ✅ Registration Form -->
       <form @submit.prevent="handleRegister" class="space-y-6">
         <div>
           <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
@@ -52,12 +51,10 @@
         </button>
       </form>
 
-      <!-- ✅ Error Message -->
       <div v-if="errorMessage" class="text-red-500 text-center mt-2">
         {{ errorMessage }}
       </div>
 
-      <!-- ✅ Redirect to Login -->
       <div class="text-center">
         <p class="text-gray-400 text-sm">
           Already have an account?
@@ -100,7 +97,6 @@ export default {
 
           console.log("✅ Registration successful:", data);
 
-          // ✅ Redirect to profile AFTER the user data is stored
           router.push("/profile");
         } else {
           errorMessage.value = data.message || "Registration failed";
