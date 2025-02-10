@@ -7,6 +7,7 @@
       </div>
 
       <form @submit.prevent="handleRegister" class="space-y-6">
+        <!-- Champ Username -->
         <div>
           <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
           <input
@@ -19,6 +20,7 @@
           />
         </div>
 
+        <!-- Champ Email -->
         <div>
           <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
           <input
@@ -31,6 +33,21 @@
           />
         </div>
 
+        <!-- Champ Date de naissance -->
+        <div>
+          <label for="birthDate" class="block text-sm font-medium text-gray-300">Date de naissance</label>
+          <input
+            v-model="birthDate"
+            type="date"
+            id="birthDate"
+            required
+            @change="validateAge"
+            class="w-full px-4 py-3 mt-1 text-gray-100 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none transition duration-300"
+          />
+          <p v-if="ageError" class="text-red-500 text-sm mt-1">{{ ageError }}</p>
+        </div>
+
+        <!-- Champ Mot de passe -->
         <div>
           <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
           <input
@@ -38,23 +55,28 @@
             type="password"
             id="password"
             required
+            @input="validatePassword"
             class="w-full px-4 py-3 mt-1 text-gray-100 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none transition duration-300"
             placeholder="••••••••"
           />
+          <p v-if="passwordError" class="text-red-500 text-sm mt-1">{{ passwordError }}</p>
         </div>
 
+        <!-- Bouton d'inscription -->
         <button
           type="submit"
-          class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition duration-300 ease-in-out shadow-lg"
+          class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-semibold transition duration-300 ease-in-out shadow-lg"
         >
           Register
         </button>
       </form>
 
+      <!-- ✅ Message d'erreur général -->
       <div v-if="errorMessage" class="text-red-500 text-center mt-2">
         {{ errorMessage }}
       </div>
 
+      <!-- ✅ Lien vers la connexion -->
       <div class="text-center">
         <p class="text-gray-400 text-sm">
           Already have an account?
@@ -73,12 +95,53 @@ export default {
   setup() {
     const username = ref("");
     const email = ref("");
+    const birthDate = ref("");
     const password = ref("");
+    const ageError = ref("");
+    const passwordError = ref("");
     const errorMessage = ref("");
     const router = useRouter();
 
+    // ✅ Vérifier que l'utilisateur a au moins 16 ans
+    const validateAge = () => {
+      if (!birthDate.value) return;
+      const birthYear = new Date(birthDate.value).getFullYear();
+      const today = new Date();
+      const age = today.getFullYear() - birthYear;
+
+      if (age < 16) {
+        ageError.value = "Vous devez avoir au moins 16 ans pour vous inscrire.";
+      } else {
+        ageError.value = "";
+      }
+    };
+
+    // ✅ Vérifier la complexité du mot de passe
+    const validatePassword = () => {
+      if (!password.value) return;
+      const birthYear = birthDate.value ? new Date(birthDate.value).getFullYear().toString() : "";
+
+      const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+      if (!passwordRegex.test(password.value)) {
+        passwordError.value =
+          "Le mot de passe doit contenir au moins 8 caractères, 1 majuscule, 1 chiffre et 1 caractère spécial.";
+        return;
+      }
+
+      if (birthYear && password.value.includes(birthYear)) {
+        passwordError.value = "Le mot de passe ne doit pas contenir votre année de naissance.";
+        return;
+      }
+
+      passwordError.value = "";
+    };
+
     const handleRegister = async () => {
+      if (ageError.value || passwordError.value) return;
+
       try {
+        console.log("🔄 Tentative d'inscription...");
+
         const response = await fetch("http://localhost:1337/api/auth/local/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -90,35 +153,37 @@ export default {
         });
 
         const data = await response.json();
+        console.log("🔍 Réponse Strapi :", data);
 
-        if (response.ok) {
+        if (response.ok && data.jwt) {
+          console.log("✅ Inscription réussie !");
           localStorage.setItem("token", data.jwt);
           localStorage.setItem("user", JSON.stringify(data.user));
 
-          console.log("✅ Registration successful:", data);
-
+          // ✅ Rediriger vers le profil après l'inscription
           router.push("/profile");
         } else {
-          errorMessage.value = data.message || "Registration failed";
+          console.error("❌ Erreur API Strapi :", data);
+          errorMessage.value = data.error?.message || "Échec de l'inscription.";
         }
       } catch (error) {
-        console.error("❌ Registration error:", error);
-        errorMessage.value = "An error occurred. Please try again.";
+        console.error("❌ Erreur lors de l'inscription :", error);
+        errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
       }
     };
 
-    return { username, email, password, errorMessage, handleRegister };
+    return {
+      username,
+      email,
+      birthDate,
+      password,
+      ageError,
+      passwordError,
+      errorMessage,
+      validateAge,
+      validatePassword,
+      handleRegister,
+    };
   },
 };
 </script>
-
-<style scoped>
-button {
-  transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease;
-}
-button:hover {
-  transform: scale(1.05);
-  background-color: #4a5568;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
-</style>
