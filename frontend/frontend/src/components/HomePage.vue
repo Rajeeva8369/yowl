@@ -29,10 +29,10 @@
         <p v-if="errorMessage" class="text-red-500 text-center mt-2">{{ errorMessage }}</p>
       </div>
 
-      <!-- Liste des posts -->
+     
       <div v-for="(post, index) in posts" :key="post.id" class="bg-gray-800 p-6 rounded-lg shadow-lg">
         
-        <!-- En-tête du post -->
+        
         <div class="flex items-center space-x-4">
           <img 
             :src="post.userImage || '/placeholder.svg'" 
@@ -53,7 +53,7 @@
           </button>
         </div>
 
-        <!-- Contenu du post -->
+      
         <p class="text-gray-300 mt-4">{{ post.content }}</p>
         <img 
           v-if="post.image" 
@@ -62,7 +62,7 @@
           alt="Post image"
         />
 
-        <!-- Actions du post -->
+        
         <div class="flex justify-around items-center mt-6 text-gray-400">
           <button @click="likePost(post.id, index)" class="hover:text-red-500 transition duration-200">
             ❤️ {{ post.likes }}
@@ -75,7 +75,7 @@
           </button>
         </div>
 
-        <!-- Section commentaires -->
+       
         <div v-if="post.showCommentSection" class="mt-4 space-y-4">
           <div v-for="(comment, cIndex) in post.comments" :key="comment.id" 
                class="bg-gray-700 p-3 rounded-lg flex justify-between items-center">
@@ -89,7 +89,7 @@
             </button>
           </div>
           
-          <!-- Ajout de commentaire -->
+        
           <div class="flex space-x-2">
             <input 
               v-model="post.newComment" 
@@ -107,7 +107,7 @@
       </div>
     </main>
 
-    <!-- Pagination -->
+    
     <footer class="bg-gray-900 text-gray-500 py-4 text-center text-sm mt-8 border-t border-gray-800">
       <div class="flex justify-center items-center space-x-4 mb-4">
         <button 
@@ -214,7 +214,7 @@ export default {
       const file = event.target.files[0]
       if (!file) return
 
-      // Prévisualisation
+     
       this.imagePreview = URL.createObjectURL(file)
       this.newPostImage = file
       this.errorMessage = ''
