@@ -3,7 +3,6 @@
    
 
     <main class="flex-1 p-6 space-y-8 max-w-3xl mx-auto">
-      <!-- Création de post -->
       <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 class="text-xl font-semibold text-white">Créer un post</h2>
         <textarea 
@@ -18,7 +17,6 @@
           class="mt-3 text-sm text-gray-400" 
           accept="image/*"
         />
-        <!-- Prévisualisation de l'image -->
         <div v-if="imagePreview" class="mt-4">
           <img :src="imagePreview" class="max-h-48 rounded-lg object-cover" alt="Preview" />
         </div>
@@ -33,6 +31,7 @@
 
       <!-- Liste des posts -->
       <div v-for="(post, index) in posts" :key="post.id" class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        
         <!-- En-tête du post -->
         <div class="flex items-center space-x-4">
           <img 

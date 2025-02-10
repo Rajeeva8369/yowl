@@ -7,7 +7,6 @@
       </div>
 
       <form @submit.prevent="handleRegister" class="space-y-6">
-        <!-- Champ Username -->
         <div>
           <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
           <input
@@ -20,7 +19,6 @@
           />
         </div>
 
-        <!-- Champ Email -->
         <div>
           <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
           <input
@@ -33,7 +31,6 @@
           />
         </div>
 
-        <!-- Champ Date de naissance -->
         <div>
           <label for="birthDate" class="block text-sm font-medium text-gray-300">Date de naissance</label>
           <input
@@ -47,7 +44,6 @@
           <p v-if="ageError" class="text-red-500 text-sm mt-1">{{ ageError }}</p>
         </div>
 
-        <!-- Champ Mot de passe -->
         <div>
           <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
           <input
@@ -62,7 +58,6 @@
           <p v-if="passwordError" class="text-red-500 text-sm mt-1">{{ passwordError }}</p>
         </div>
 
-        <!-- Bouton d'inscription -->
         <button
           type="submit"
           class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-semibold transition duration-300 ease-in-out shadow-lg"
@@ -76,7 +71,6 @@
         {{ errorMessage }}
       </div>
 
-      <!-- ✅ Lien vers la connexion -->
       <div class="text-center">
         <p class="text-gray-400 text-sm">
           Already have an account?
@@ -102,7 +96,6 @@ export default {
     const errorMessage = ref("");
     const router = useRouter();
 
-    // ✅ Vérifier que l'utilisateur a au moins 16 ans
     const validateAge = () => {
       if (!birthDate.value) return;
       const birthYear = new Date(birthDate.value).getFullYear();
@@ -116,7 +109,6 @@ export default {
       }
     };
 
-    // ✅ Vérifier la complexité du mot de passe
     const validatePassword = () => {
       if (!password.value) return;
       const birthYear = birthDate.value ? new Date(birthDate.value).getFullYear().toString() : "";
@@ -160,7 +152,6 @@ export default {
           localStorage.setItem("token", data.jwt);
           localStorage.setItem("user", JSON.stringify(data.user));
 
-          // ✅ Rediriger vers le profil après l'inscription
           router.push("/profile");
         } else {
           console.error("❌ Erreur API Strapi :", data);
