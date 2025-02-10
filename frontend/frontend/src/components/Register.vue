@@ -66,7 +66,7 @@
         </button>
       </form>
 
-      <!-- ✅ Message d'erreur général -->
+     
       <div v-if="errorMessage" class="text-red-500 text-center mt-2">
         {{ errorMessage }}
       </div>
