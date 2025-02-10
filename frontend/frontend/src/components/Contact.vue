@@ -13,7 +13,7 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <!-- Contact Info -->
+        
         <div class="bg-white text-black shadow-lg rounded-lg p-6">
           <h5 v-if="showCardTitle" class="text-xl font-semibold mb-4">Contact Information</h5>
           <ul class="space-y-3">
@@ -25,7 +25,7 @@
           </ul>
         </div>
 
-        <!-- Google Maps -->
+        
         <div class="rounded-lg overflow-hidden shadow-lg">
           <iframe
             class="w-full h-64 sm:h-80 md:h-full rounded-lg"
